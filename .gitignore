@@ -1,2 +1,4 @@
 *.vscode
 /tsp
+/data
+/__pycache__
