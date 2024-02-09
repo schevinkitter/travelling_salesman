@@ -82,52 +82,21 @@ def load_tsp_problem(path: str):
     return initial_tour
 
 
-def animation_tsp(history, city_locations):
+def animation_tsp(tour_history, energy_history, city_locations):
 
-    fig, ax = plt.subplots()
-
-    line, = plt.plot([], [], lw=2)
-
-    def init():
-        x, y = city_locations.T
-        plt.plot(x, y, 'o', color='black')
-
-        line.set_data([], [])
-
-        return line,
-
-    def update(frame):
-        x = [city_locations[i, 0]
-             for i in history[frame] + [history[frame][0]]]
-        y = [city_locations[i, 1]
-             for i in history[frame] + [history[frame][0]]]
-        line.set_data(x, y)
-        return line
-
-    ani = FuncAnimation(fig, update, frames=range(0, len(history), len(history)//100),
-                        init_func=init, interval=60, repeat=False)
-
-    plt.show()
-
-    return
-
-
-def animation_tsp_v2(history, history_H, city_locations):
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
 
     line1, = ax1.plot([], [], lw=2)
     line2, = ax2.plot([], [], lw=2)
 
     def init():
         x, y = city_locations.T
-        h, iters = history_H, [i for i in range(len(history_H))]
+        h, iters = energy_history, [i for i in range(len(energy_history))]
 
         ax1.plot(x, y, 'o', color='black')
 
-
-        ax2.set_xlim(0, len(history_H))
-        ax2.set_ylim(0, max(history_H) + 0.1*max(history_H))
+        ax2.set_xlim(0, len(energy_history))
+        ax2.set_ylim(0, max(energy_history) + 0.1*max(energy_history))
 
         line1.set_data([], [])
         line2.set_data([], [])
@@ -135,19 +104,52 @@ def animation_tsp_v2(history, history_H, city_locations):
 
     def update(frame):
         x = [city_locations[i, 0]
-             for i in history[frame] + [history[frame][0]]]
+             for i in tour_history[frame] + [tour_history[frame][0]]]
         y = [city_locations[i, 1]
-             for i in history[frame] + [history[frame][0]]]
-        
-        h = history_H[:frame]
+             for i in tour_history[frame] + [tour_history[frame][0]]]
+
+        h = energy_history[:frame]
         iters = list(range(frame))
         line1.set_data(x, y)
         line2.set_data(iters, h)
         return line1, line2
 
-    ani = FuncAnimation(fig, update, frames=range(0, len(history), len(history)//100),
-                        init_func=init, interval=60, repeat=False)
+    ani = FuncAnimation(fig, update, frames=range(0, len(tour_history), len(tour_history)//1000),
+                        init_func=init, interval=80, repeat=False)
 
     plt.show()
 
+    return
+
+
+def show_endresult(shortest_tour, energy_history, city_locations):
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    x, y = city_locations.T
+
+    x_coords = [city_locations[i, 0] for i in shortest_tour + [shortest_tour[0]]]
+    y_coords = [city_locations[i, 1] for i in shortest_tour + [shortest_tour[0]]]
+
+    ax1.plot(x, y, 'o', color='black')
+    ax1.set_ylabel(r'$y$')
+    ax1.set_xlabel(r'$x$')
+    ax1.set_title('shortest route')
+    ax1.plot(x_coords, y_coords)
+    
+    ax2.plot([i for i in range(len(energy_history))], energy_history)
+    ax2.set_xlim(0, len(energy_history))
+    ax2.set_ylim(0, max(energy_history) + 0.1*max(energy_history))
+    ax2.set_ylabel(r'$H$')
+    ax2.set_xlabel(r'iterations')
+    
+    # Setting xticks
+    # Getting automatic ticks
+    xticks = list(ax2.get_xticks())
+    xticks.pop()
+    # Adding one single tick to the automatic ticks
+    xticks[-1] = len(energy_history)
+    # Setting xticks
+    ax2.set_xticks(xticks)
+    ax2.axhline(y = min(energy_history), color='green', linestyle='--', label = r'$H_{min}$')
+    plt.show()
     return
